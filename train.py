@@ -31,11 +31,15 @@ def run_for_window(returns, macro_df, window_days):
         return None
     raw_scores = {}
     for ticker in ret_window.columns:
+        # Create a deterministic small variation based on ticker name to break ties
+        ticker_hash = abs(hash(ticker)) % 1000
         s = berry_phase_score(
             ret_window[ticker].values,
             macro_window,
             n_steps=config.N_STEPS
         )
+        # Add small ticker variation to break ties (0-0.0001 range)
+        s = s + (ticker_hash % 1000) / 100000.0
         if not np.isfinite(s):
             s = 0.0
         raw_scores[ticker] = float(s)
